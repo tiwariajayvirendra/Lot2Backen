@@ -1,35 +1,72 @@
-import mongoose from "mongoose";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
+import bcrypt from 'bcryptjs';
 
-const TicketSchema = new mongoose.Schema({
-  ticketNumber: { type: String, required: true },
-  skimId: { type: String },
-  amountPaid: { type: Number, required: true },
-  purchaseDate: { type: Date, default: Date.now },
-  downloadLink: { type: String },
-  paymentStatus: { type: String, enum: ["Pending", "Paid"], default: "Pending" },
-  razorpayOrderId: { type: String, default: "" },
-  razorpayPaymentId: { type: String, default: "" },
-  razorpaySignature: { type: String, default: "" },
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  fullName: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  mobile: {
+    type: DataTypes.STRING(10),
+    allowNull: false,
+    unique: true,
+    validate: {
+      is: /^\d{10}$/
+    }
+  },
+  state: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  age: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    validate: {
+      min: 18
+    }
+  },
+  aadhaar: {
+    type: DataTypes.STRING(12),
+    allowNull: true,
+    unique: true,
+    validate: {
+      is: /^\d{12}$/,
+      len: [12, 12]
+    }
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+    validate: {
+      isEmail: true
+    }
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      len: [8, 255],
+      is: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
+    }
+  }
+}, {
+  tableName: 'users',
+  timestamps: true,
+  hooks: {
+    beforeSave: async (user) => {
+      if (user.changed('password') && user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
+  }
 });
 
-const UserSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
-  mobile: { type: String, required: true, unique: true, match: /^\d{10}$/, index: true },
-  state: { type: String, required: true },
-  age: { type: Number, required: true },
-  aadhaar: { type: String, match: /^\d{12}$/, unique: true, sparse: true, default: null },
-  tickets: {
-    type: [TicketSchema],
-    validate: {
-      validator: function (v) {
-        const numbers = v.map((t) => t.ticketNumber);
-        return numbers.length === new Set(numbers).size;
-      },
-      message: "Duplicate ticket numbers are not allowed",
-    },
-  },
-  email: { type: String, unique: true, sparse: true, lowercase: true, default: null },
-  password: { type: String },
-}, { timestamps: true });
-
-export default mongoose.model("User", UserSchema);
+export default User;

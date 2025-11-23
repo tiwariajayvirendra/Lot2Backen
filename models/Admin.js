@@ -1,23 +1,34 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
+import bcrypt from 'bcryptjs';
 
-const AdminSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String, required: true },
-}, { timestamps: true });
-
-// Hash password before saving
-AdminSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
+const Admin = sequelize.define('Admin', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    lowercase: true
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
   }
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
+}, {
+  tableName: 'admins',
+  timestamps: true,
+  hooks: {
+    beforeSave: async (admin) => {
+      if (admin.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        admin.password = await bcrypt.hash(admin.password, salt);
+      }
+    }
   }
 });
 
-export default mongoose.model("Admin", AdminSchema);
+export default Admin;
