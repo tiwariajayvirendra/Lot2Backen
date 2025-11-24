@@ -252,7 +252,6 @@ app.post("/api/verify-payment", async (req, res) => {
     // Generate QR code
     const qrPath = path.join(ticketsDir, `qr_${ticket.id}.png`);
     await QRCode.toFile(qrPath, `https://pay.example.com/${ticket.id}`);
-
     // Create ticket PNG
     const canvas = createCanvas(700, 400);
     const ctx = canvas.getContext("2d");
