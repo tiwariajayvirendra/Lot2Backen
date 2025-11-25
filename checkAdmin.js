@@ -1,4 +1,4 @@
-// Quick script to check if admin account exists
+// Script to check for an admin account and create one if it doesn't exist.
 import dotenv from "dotenv";
 import { sequelize, Admin } from "./models/index.js";
 
@@ -14,11 +14,28 @@ const checkAdmin = async () => {
     });
 
     if (admins.length === 0) {
-      console.log("❌ No admin account found!");
-      console.log("\n💡 To create an admin account:");
-      console.log("   1. Use API: POST http://localhost:5000/api/admin/signup");
-      console.log("   2. Or run script: node routes/adminPassword.js");
-      console.log("\n   Make sure to set ADMIN_USERNAME and ADMIN_PASSWORD in .env file");
+      console.warn("❌ No admin account found!");
+
+      const username = process.env.ADMIN_USERNAME;
+      const password = process.env.ADMIN_PASSWORD;
+
+      if (!username || !password) {
+        console.error("FATAL: ADMIN_USERNAME and ADMIN_PASSWORD are not set in your environment variables.");
+        console.error("Please set them in your hosting provider's dashboard to create the initial admin user.");
+        await sequelize.close();
+        process.exit(1);
+      }
+
+      console.log(`\n💡 Creating initial admin user with username: '${username}'...`);
+      
+      await Admin.create({ 
+        username: username.toLowerCase(), 
+        password: password // The model will hash it automatically
+      });
+
+      console.log("✅ Admin account created successfully!");
+      console.log("You should now be able to log in with the credentials from your environment variables.");
+
     } else {
       console.log(`\n✅ Found ${admins.length} admin account(s):`);
       admins.forEach((admin, index) => {
