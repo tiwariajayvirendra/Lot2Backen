@@ -16,8 +16,8 @@ const checkAdmin = async () => {
     if (admins.length === 0) {
       console.warn("❌ No admin account found!");
 
-      const username = process.env.ADMIN_USERNAME;
-      const password = process.env.ADMIN_PASSWORD;
+      const username = process.env.DB_ADMIN_USERNAME;
+      const password = process.env.DB_ADMIN_PASSWORD;
 
       if (!username || !password) {
         console.error("FATAL: ADMIN_USERNAME and ADMIN_PASSWORD are not set in your environment variables.");
