@@ -20,8 +20,8 @@ const checkAdmin = async () => {
       const password = process.env.DB_ADMIN_PASSWORD;
 
       if (!username || !password) {
-        console.error("FATAL: ADMIN_USERNAME and ADMIN_PASSWORD are not set in your environment variables.");
-        console.error("Please set them in your hosting provider's dashboard to create the initial admin user.");
+        console.error("FATAL: DB_ADMIN_USERNAME and DB_ADMIN_PASSWORD are not set in your environment variables.");
+        console.error("Please set them in your Render dashboard to create the initial admin user.");
         await sequelize.close();
         process.exit(1);
       }
