@@ -30,6 +30,10 @@ const app = express();
 //PORT 
 const PORT = process.env.PORT || 5000;
 
+// Log current environment
+const isProduction = process.env.NODE_ENV === 'production';
+console.log(`✅ Server starting in ${isProduction ? 'production' : 'development'} mode.`);
+
 // ------------------ Middleware ------------------ //
 app.use(cors());
 app.use(express.json());
@@ -49,6 +53,16 @@ async function startServer() {
     await sequelize.sync({ alter: false });
     console.log("✅ Database synchronized - All tables ready");
     
+    // Check for admin user on startup
+    const adminCount = await Admin.count();
+    if (adminCount === 0) {
+      console.warn("⚠️ WARNING: No admin account found.");
+      console.warn("   To create one, run 'node routes/adminPassword.js' or use the signup API.");
+      console.warn("   Make sure ADMIN_USERNAME and ADMIN_PASSWORD are set in your .env file.");
+    } else {
+      console.log(`✅ Found ${adminCount} admin account(s).`);
+    }
+
     // Start server only after database is ready
     app.listen(PORT, () => {
       console.log(`✅ Server running on port: ${PORT}`);
@@ -146,7 +160,7 @@ app.post("/api/create-order", async (req, res) => {
     res.status(err.statusCode || 500).json({ 
       message: errorMessage,
       hint: "Please check Razorpay configuration and try again",
-      ...(process.env.NODE_ENV === 'development' && { error: err.message, stack: err.stack })
+      ...(!isProduction && { error: err.message, stack: err.stack })
     });
   }
 });

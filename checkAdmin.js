@@ -17,7 +17,7 @@ const checkAdmin = async () => {
       console.log("❌ No admin account found!");
       console.log("\n💡 To create an admin account:");
       console.log("   1. Use API: POST http://localhost:5000/api/admin/signup");
-      console.log("   2. Or run: node routes/adminPassword.js");
+      console.log("   2. Or run script: node routes/adminPassword.js");
       console.log("\n   Make sure to set ADMIN_USERNAME and ADMIN_PASSWORD in .env file");
     } else {
       console.log(`\n✅ Found ${admins.length} admin account(s):`);
@@ -36,4 +36,3 @@ const checkAdmin = async () => {
 };
 
 checkAdmin();
-

@@ -5,7 +5,7 @@ const verifyAdmin = async (req, res, next) => {
   try {
     // Check if JWT_SECRET is configured
     if (!process.env.JWT_SECRET) {
-      console.error("JWT_SECRET is not set in environment variables");
+      console.error("CRITICAL: JWT_SECRET is not set in environment variables. Authentication is disabled.");
       return res.status(500).json({ 
         message: "Server configuration error: JWT_SECRET missing",
         hint: "Please set JWT_SECRET in your .env file"
@@ -16,7 +16,7 @@ const verifyAdmin = async (req, res, next) => {
 
     if (!authHeader) {
       return res.status(401).json({ 
-        message: "No authorization header provided",
+        message: "Authorization header missing",
         hint: "Please include 'Authorization: Bearer <token>' header"
       });
     }
@@ -24,7 +24,7 @@ const verifyAdmin = async (req, res, next) => {
     if (!authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ 
         message: "Invalid authorization format",
-        hint: "Authorization header must start with 'Bearer '"
+        hint: "Format should be 'Authorization: Bearer <token>'"
       });
     }
 
@@ -67,7 +67,7 @@ const verifyAdmin = async (req, res, next) => {
     next();
   } catch (err) {
     console.error("JWT verification error:", err);
-    return res.status(500).json({ 
+    return res.status(500).json({
       message: "Internal server error during authentication",
       ...(process.env.NODE_ENV === 'development' && { error: err.message })
     });
